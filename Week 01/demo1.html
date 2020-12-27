@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    div{
+        display: inline-block;
+        vertical-align: middle;
+        width:100px;
+        height:100px;
+        border-radius: 50%;
+        margin-right:30px;
+        background: rgb(136, 136, 136);
+    }
+    .green.active{
+        background: green;
+    }
+    .red.active{
+        background: red;
+    }
+    .yellow.active{
+        background: yellow;
+    }
+</style>
+
+<body>
+    <div class='green'></div>
+    <div class='yellow'></div>
+    <div class='red'></div>
+    <script>
+        function add_active(color,time)　{
+            let dom = document.querySelector(`.${color}`);
+            del_active()
+            dom.classList.add('active')
+            return new Promise((resolve,reject) => {
+                setTimeout(()=> {
+                    resolve()
+                },time)
+            })
+        }
+        function del_active() {
+            let div = document.querySelector('.active')
+            div && div.classList.remove('active')
+        }
+        async function start() {
+            await add_active('green',10000)
+            await add_active('yellow',2000)
+            await add_active('red',5000)
+            start()
+        }
+        
+        start()
+       
+    </script>
+</body>
+
+</html>

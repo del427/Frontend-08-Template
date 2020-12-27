@@ -1,0 +1,199 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    .tab{
+        width:300px;
+        height:300px;
+
+    }
+    .t-item{
+        box-sizing: border-box;
+        border:1px solid #ddd;
+        background: cornflowerblue;
+        display: inline-block;
+        width: 100px;
+        height: 100px;
+        vertical-align: middle;
+        text-align: center;
+        line-height: 100px;
+        font-size: 40px;
+    }
+</style>
+<body>
+    <div class='tab'></div>
+    <script>
+        let parmas = [
+            [1,0,0],
+            [0,2,0],
+            [0,0,0]
+        ];
+        let status = 1;
+        function createTable() {
+            let tab = document.querySelector('.tab');
+            tab.innerHTML = '';
+            parmas.map((item,index) => {
+                item.map((i,k) => {
+                    let div = document.createElement('div');
+                    div.className = 't-item';
+                    div.innerText = 
+                    i == 1?'⭕':
+                    i == 2?'❌':'';
+                    div.addEventListener('click',() => {
+                        changeItem(index,k)
+                    })
+                    tab.appendChild(div);
+                })
+            })
+        }
+        function test_change() {
+            if(checkWin(parmas,status)){
+                let user = status == 1 ? '⭕':'❌';
+                console.log(user+ 'win')
+                createTable();
+                return true
+            }
+            if(ai_check(parmas,status)){
+                let user = status == 1 ? '⭕':'❌';
+                console.log(user+ '马上win')
+            }
+            status = status == 2?1:2;
+        }
+        function changeItem(row,col) {
+            if(parmas[row][col]){
+                return
+            }
+            parmas[row][col] = status;
+          
+            
+        
+            if(test_change()){
+                //游戏结束
+                return
+            }
+          
+          
+            ai_user(parmas)
+            createTable();
+
+           
+        }
+
+        function checkWin(parmas,status) {
+            let i_leng = parmas.length;
+          
+            for(let i = 0; i < i_leng; i++){
+                let j_leng = parmas[i].length;
+                let win_1 = true;
+                let win_2 = true;
+                let win_3 = true;
+                let win_4 = true;
+                for(let j = 0; j < j_leng; j++){
+                   
+                    if(parmas[i][j] !== status){
+                        //横算
+                        win_1 = false;
+                    }
+                    if(parmas[j][i] !== status){
+                        //竖算
+                        win_2 = false
+                    }
+                    if(parmas[j][j] !== status){
+                        //左斜
+                        win_3 = false
+                    }
+                    if(parmas[j][j_leng - j - 1] !== status){
+                        win_4 = false
+                    }
+                }
+                if(win_1||win_2||win_3||win_4){
+                    return true
+                }
+            }
+         
+            return false
+        }
+        function ai_check(parmas,status) {
+            let i_leng = parmas.length;
+            for(let i = 0; i < i_leng; i++){
+                let j_leng = parmas[i].length;
+                
+                for(let j = 0; j < j_leng; j++){
+                    
+                    if(parmas[i][j]){
+                        continue;
+                    }
+                    let temp = JSON.parse(JSON.stringify(parmas));
+                    temp[i][j] = status;
+                  
+                    if(checkWin(temp,status)){
+                        return [i,j]
+                    }
+
+                }
+              
+            }
+            return null
+        }
+        function bestChios(parmas,status) {
+            let p = '';
+            if( p = ai_check(parmas,status)){
+                return {
+                    point:p,
+                    result:1,
+                }
+            }
+            let i_leng = parmas.length;
+            let result = -2;
+            outer:for(let i = 0; i < i_leng; i++){
+                let j_leng = parmas[i].length;
+                
+                for(let j = 0; j < j_leng; j++){
+                    
+                    if(parmas[i][j]){
+                        continue;
+                    }
+                    let temp = JSON.parse(JSON.stringify(parmas));
+                    temp[i][j] = status;
+                    // status = status == 2?1:2;
+                    let r = bestChios(temp,3-status).result;
+                   
+                    if(-r > result){
+                        result = -r;
+                        p = [i,j]
+                    }
+                   
+
+                }
+              
+            }
+            return {
+                point:p,
+                result:p?result:0,
+            }
+        }
+        function ai_user(parmas) {
+           
+            let point = bestChios(parmas,status).point;
+            if(!point){
+                //棋盘满了
+                return
+            }
+            console.log(bestChios(parmas,status))
+            parmas[point[0]][point[1]] = status;
+            if(test_change()){
+                //游戏结束
+                return
+            }
+           
+
+        }
+        createTable();
+    </script>
+</body>
+</html>

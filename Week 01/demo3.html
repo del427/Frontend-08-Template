@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    .wrap{
+        background: blanchedalmond;
+        display: inline-block;
+    }
+    .tab{
+        width:700px;
+        border:1px solid rgba(0, 0, 0, 0.8);
+        margin:50px;
+    }
+    .data{
+        width: 100%;
+        height:100;
+        position: relative;
+    }
+    .data>div{
+        width:50px;
+        height: 50px;
+        position: absolute;
+        z-index:1;
+        border-radius: 50%;
+    }
+    .black{
+        background: black;
+    }
+    .white{
+        background: #fff;
+    }
+    .view{
+        width:100%;
+        height:100%;
+    }
+    .view>div{
+        display: inline-block;
+        width:50px;
+        height: 50px;
+        border:1px solid rgba(0, 0, 0, 0.8);
+        box-sizing: border-box;
+        vertical-align: middle;
+    }
+</style>
+<body>
+    <div class='wrap'>
+        <div class='tab'>
+            <div class='data'></div>
+            <div class='view'></div>
+        </div>
+    </div>
+
+    <script>
+        const tabData = [];
+        const col = 15;
+        const row = 15;
+        let user = 'black';
+        function creatData() {
+            //生成棋子格子
+          
+            let data = document.querySelector('.tab>.data');
+            for(let i = 0; i < row; i++){
+                for(let j = 0; j < col; j++){
+                    tabData.push(0);
+                    let div = document.createElement('div');
+                    div.style.left = (j * 50 -25) + 'px';
+                    div.style.top = (i * 50 -25) + 'px';
+                    data.appendChild(div)
+                    div.addEventListener('click',(e) => {
+                        //点击添加棋子
+                        addPieces(e,i,j)
+                        
+                    })
+                }
+            }
+        }
+        function creatTab() {
+            //生成棋盘格子
+            const col = 14;
+            const row = 14;
+            let view = document.querySelector('.tab>.view');
+            for(let i = 0; i < row; i++){
+                for(let j = 0; j < col; j++){
+                    let div = document.createElement('div');
+                    view.appendChild(div)
+                }
+            }
+        }
+        
+        function addPieces(e,i,j) {
+            //添加棋子
+            if(e.target.classList.length > 0){
+                //已经有棋子了
+                return 
+            }
+            tabData[i*15+j] = user=='black'?'1':'2';
+            e.target.classList.add(user);
+            if(checkWin(tabData,i,j,user)){
+                console.log(user,'win')
+                alert(user,'win')
+                return
+            }
+            if(ai_check(tabData,i,j,user)){
+                //判断再下一子是否会赢
+                console.log(user,'马上就要win')
+            }
+            user = user=='black'?'white':'black';
+
+            // ai_user(tabData,i,j)
+            // console.log(tabData)
+        }
+        function testMax(i,j) {
+            let left = j - 5 < 0? 0: j - 5;
+            let right = j + 5 > 14 ? 14:j +5;
+            let top = i - 5 < 0 ?0: i - 5;
+            let bottom = i + 5 > 14? 14:i + 5;
+            return {
+                left,right,top,bottom
+            }
+        }
+        function checkWin(tabData,i,j,user) {
+            //判断胜利
+          
+           let color = user=='black'?'1':'2';
+           let {left,right,top,bottom} = testMax(i,j)
+           let l_top = top;
+      
+           let win_1 = 0;
+           let win_2 = 0;
+           let win_3 = 0;
+           let win_4 = 0;
+           for(let j = left; j < right; j++ ){
+                //横算
+                if(tabData[i*15+j] == color){
+                    ++win_1
+                }else {
+                    win_1 = 0;
+                }
+
+                //左斜算
+
+                if(tabData[l_top*15+j] == color){
+                    ++win_3
+                }else {
+                    win_3 = 0;
+                }
+              
+                l_top++
+
+                if(win_1 == 5 || win_3 == 5){
+                    return true
+                }
+
+           }
+           
+           for(let i = top; i < bottom; i++){
+                // //竖算
+                if(tabData[i*15+j] == color){
+                    
+                    ++win_2
+                    }else {
+                        win_2 = 0;
+                }
+               
+                //右斜
+                if(tabData[i*15+right] == color){
+                    ++win_4
+                }else{
+                    win_4 = 0;
+                }
+                right--;
+                if(win_2==5 || win_4==5){
+                    return true
+                }
+
+           }
+           
+         
+          
+           return false
+        }
+        function ai_check(tabData,i,j,user) {
+            let color = user=='black'?'1':'2';
+            let {left,right,top,bottom} = testMax(i,j)
+            for(let i = top; i< bottom; i++){
+                for(let j = left; j < right; j++){
+                    if(tabData[i*15+j]){
+                        continue
+                    }
+                    const temp = Object.create(tabData);
+                    temp[i*15+j] = color;
+                    if(this.checkWin(temp,i,j,user)){
+                        return [i,j]
+                    }
+                }
+            }
+            return false
+        }
+
+        function bestChios(tabData,i,j,user) {
+            let point = '';
+            console.log(tabData,i,j,user)
+            
+            if(point = ai_check(tabData,i,j,user)){
+                return {
+                    result:1,
+                    point
+                }
+            }
+            let color = user =='black'?'1':'2';
+            let {left,right,top,bottom} = testMax(i,j);
+            let result = -2;
+           console.log(user)
+        //    return
+            outer:for(let i = top; i < bottom; i++){
+                for(let j = left; j < right; j++){
+                   
+                    const temp = Object.create(tabData);
+                    if(temp[i*15+j]){
+                        
+                        continue
+                    }
+                   
+
+                    temp[i*15+j] = color;
+                    let user = color == 1?'black':'white';
+                    let p = bestChios(temp,i,j,user);
+                    if(-p > result){
+                        point = [i,j];
+                        result = -p;
+                    }
+                    if(result == 1){
+                        break outer;
+                    }
+                }
+            }
+            return {
+                point,
+                result:point?result:0
+            }
+        }
+        function ai_user(tabData,i,j) {
+            const temp = Object.create(tabData);
+           let point =  bestChios(tabData,i,j,user).point;
+      
+           let color = user =='black'?'1':'2';
+            if(!point){
+                //游戏结束
+                return 
+            }
+          
+            tabData[proint[0] * 15 +proint[1]] = color;
+
+            user = user=='black'?'white':'black';
+
+        }
+        
+        creatData()
+        creatTab()
+    </script>
+</body>
+</html>
