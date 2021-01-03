@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    *{
+        margin:0;
+        padding:0;
+    }
+    .content{
+        border:1px solid black;
+        width: 1000px;
+        font-size: 0px;
+        margin:20px;
+    }
+    .item{
+        border:1px solid black;
+        width:10px;
+        height: 10px;
+        display: inline-block;
+        vertical-align: middle;
+        box-sizing: border-box;
+        line-height: 10px;
+        text-align: center;
+    }
+    .block{
+        background: black;
+    }
+    .green{
+        background: forestgreen;
+    }
+    .blue{
+        background: blue;
+    }
+    button{
+        padding:20px;
+        font-size: 18px;
+    }
+</style>
+<body>
+    <div class='content'></div>
+    <button onclick='localStorage["map"]= JSON.stringify(map)'>save</button>
+    <script>
+        let map = localStorage['map'] && JSON.parse(localStorage['map'])|| new Array (10000).fill(0);
+        let content = document.querySelector('.content');
+        let mouseStatus = false;
+        let clear = false;
+        function creatMap() {
+            
+            for(let i = 0; i < 100; i++){
+                for(let j = 0; j < 100; j++){
+                    let div = document.createElement('div');
+                    div.className = 'item';
+                    if(map[i*100+j] != '0'){
+
+                        div.classList.add('block');
+                    }
+                 
+                    div.addEventListener('mouseenter',(e) =>{
+                        if(!mouseStatus){
+                            return
+                        }
+                        if(clear){
+                            map[i*100+j] = 0;
+                            e.target.classList.remove('block')
+                        }else{
+                            map[i*100+j] = 1;
+                            e.target.classList.add('block')
+                        }
+                        // console.log(map)
+                      
+                    })
+                    content.appendChild(div);
+                }
+            }
+        }
+        
+        document.addEventListener('mousedown',(e) => {
+            clear = e.which == 3;
+            mouseStatus = true
+        })
+        document.addEventListener('mouseup',() => {
+            mouseStatus = false;
+        })
+        //取消右键点击
+        document.addEventListener('contextmenu',(e) => {
+         
+            e.preventDefault()
+        })
+        function sleep (t) {
+            return new Promise((resolve,reject) => {
+                setTimeout(resolve,t)
+            })
+        }
+        async function findPath(map,start,end) {
+            let queue =  new Sorted([start],(a,b) => dance(a) - dance(b));
+           
+            const table = Object.create(map);
+            function dance(print) {
+                return (print[0] - end[0]) **2  + (print[1] - end[1]) ** 2
+            }
+            async function insert (x,y,pre) {
+                //    console.log(map[x*100+y])  
+
+                if(x < 0 || x >= 100 || y < 0 || y >= 100){
+                    return
+                }  
+                
+                if(table[x*100+y]){
+                    return
+                }
+                // await sleep(100)
+                
+                content.children[x*100+y].classList.add('green')
+                table[x*100 +y] = pre;
+                
+                queue.give([x,y]);
+            }   
+
+            while(queue.data.length){
+                let [x,y] = queue.take();
+
+                if(x==end[0] && y== end[1]){
+                    let path = [];
+                  
+                    while(x != start[0]|| y != start[1]){
+                    // console.log(table[x*100+y])
+                    path.push(table[x*100+y]);
+
+                    [x,y] = table[x*100+y];
+
+                           
+                            
+                    await sleep(30)
+                    content.children[x*100+y].classList.add('blue')
+                    }
+                    return path
+                }
+                
+                await insert(x-1,y,[x,y]);
+                await insert(x+1,y,[x,y]);
+                await insert(x,y-1,[x,y]);
+                await insert(x,y+1,[x,y]);
+
+                await insert(x-1,y-1,[x,y]);
+                await insert(x+1,y+1,[x,y]);
+                await insert(x-1,y+1,[x,y]);
+                await insert(x+1,y-1,[x,y]);
+            }
+            return null
+        }
+        class Sorted{
+            constructor(arr,company){
+                this.data = arr.slice(0);
+                this.company = company || ((a,b) => a-b);
+            }
+            take() {
+                if(!this.data.length){
+                    return 
+                }
+                let min = this.data[0];
+                let minIndex = 0;
+                let leng = this.data.length;
+                for(let i = 1; i < leng; i++){
+                    if(this.company(this.data[i],min) <0){
+                        //返回是负的说明，当前的min比较大，当前索引替带min的值
+                        // console.log(this.data[i])
+                        min = this.data[i];
+                        minIndex = i;
+                    }
+                }
+                //将最后位值赋值给最值，踢出最后位，这样能减少数组的操作
+                this.data[minIndex] = this.data[leng - 1];
+                this.data.pop()
+                return min
+            }
+            give(i) {
+                this.data.push(i)
+            }
+        }
+        creatMap()
+        // 
+    </script>
+</body>
+</html>
