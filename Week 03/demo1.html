@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+        let regexp = /([0-9\.]+)|([ \t]+)|([\r\n]+)|(\*)|(\/)|(\+)|(\-)/g
+        var dictionary = ['Number','whitespce','lineterminator','*','/','+','-'];
+        function tokensize(souce){
+            var result = null;
+            while(true){
+                result = regexp.exec(souce);
+                if(!result)break;
+                for(let i = 1; i <=dictionary.length; i++ ){
+                    if(result[i]){
+                        console.log(result[i],'result[i]',i)
+                        console.log(dictionary[i-1],'dictionary[i-1]')
+                    }
+                }
+                console.log(result)
+            }
+        }
+        let str = '1024 + 10 * 24';
+        tokensize(str)
+        // console.log(regexp.exec(str)) 
+        // console.log(regexp.exec(str)) 
+        // console.log(regexp.exec(str)) 
+    </script>
+</body>
+</html>
