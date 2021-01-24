@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+        let obj = {
+            a:{
+                b:1
+            },
+            b:2
+        };
+        let userReactiveies = [];
+        let reactiveies = new Map();
+        let callbacks = new Map();
+        let po = relative(obj);
+        function effect(callback) {
+         
+            userReactiveies = [];
+            callback();
+            console.log(userReactiveies)
+            for( let reactivity of userReactiveies){
+                if(!callbacks.has(reactivity[0])){
+                    console.log(reactivity[0],'reactivity[0]')
+                    callbacks.set(reactivity[0],new Map())
+                }
+                if(!callbacks.get(reactivity[0]).has(reactivity[1])){
+                    callbacks.get(reactivity[0]).set(reactivity[1],[])
+                }
+                callbacks.get(reactivity[0]).get(reactivity[1]).push(callback)
+            }
+        }
+        effect(() => {
+            console.log(po.a.b)
+            
+        })
+        function relative(obj) {
+            if(reactiveies.has(obj)){
+                return reactiveies.get(obj)
+            }
+            let proxy =  new Proxy (obj,{
+                set(obj,key,val){
+                    obj[key] = val;
+                    if(callbacks.get(obj)){
+                        if(callbacks.get(obj).get(key)){
+                            for( let callback of callbacks.get(obj).get(key)){
+                                console.log(key,'key')
+                                callback()
+                            }
+                        }
+                    }
+                    return obj[key]
+                },
+                get(obj,key) {
+                    userReactiveies.push([obj,key])
+                    if(typeof obj[key] == 'object'){
+                        return relative(obj[key])
+                    }
+                    return obj[key]
+                }
+            })
+            reactiveies.set(obj,proxy);
+            return proxy
+        }                                      
+    </script>
+</body>
+</html>

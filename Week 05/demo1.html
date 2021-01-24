@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+        let obj = {
+            a:1,
+            b:2
+        };
+        let po = relative(obj);
+        function relative(obj) {
+            return new Proxy (obj,{
+                set(obj,key,val){
+                    obj[key] = val;
+                },
+                get(obj,key) {
+                    return obj[key]
+                }
+            })
+        }                                      
+    </script>
+</body>
+</html>
