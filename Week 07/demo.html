@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="https://gw.alipayobjects.com/os/lib/antv/g6/4.1.7/dist/g6.min.js"></script>
+    <style>
+        #mountNode {
+            width: 800px;
+            height: 800px;
+            border: 1px solid gray;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="mountNode"></div>
+
+    <script>
+         function renderG6(data) {
+        const treeGraph = new G6.TreeGraph({
+          container: "mountNode",
+          width: 800,
+          height: 800,
+          modes: {
+            default: [
+              //   {
+              //     type: "collapse-expand",
+              //     onChange(item, collapsed) {
+              //       const icon = item
+              //         .get("group")
+              //         .findByClassName("collapse-icon");
+
+              //       console.log(item, collapsed, icon);
+              //       if (collapsed) {
+              //         treeGraph.updateItem(item, {
+              //           labelCfg: {
+              //             style: {
+              //               fill: "red",
+              //             },
+              //           },
+              //         });
+              //       } else {
+              //         treeGraph.updateItem(item, {
+              //           labelCfg: {
+              //             style: {
+              //               fill: "black",
+              //             },
+              //           },
+              //         });
+              //       }
+              //     },
+              //   },
+              "collapse-expand",
+              "drag-canvas",
+              "zoom-canvas",
+            ],
+          },
+          layout: {
+            type: "compactBox",
+            direction: "LR", // H / V / LR / RL / TB / BT
+          },
+        });
+        treeGraph.data(data); // 读取 Step 2 中的数据源到图上
+        treeGraph.render(); // 渲染图
+        treeGraph.fitView();
+      }
+        function getRealm() {
+            const names = Object.getOwnPropertyNames(window);
+            const map = new Map();
+            for (let name of names) {
+                if (window[name] && window[name].prototype) {
+
+                    const prop = window[name].prototype.__proto__;
+                    if (!map.has(prop)) {
+                        map.set(prop, [window[name]])
+                    }
+                    if (!map.get(prop).includes(window[name])) {
+                        map.get(prop).push(window[name])
+                    }
+
+
+                }
+            }
+          
+            function getChildren(root) {
+                if (map.has(root)) {
+            
+                    return map.get(root).map((r) => ({
+                            id: r.name,
+                            label: r.name,
+                            // children: getChildren(r.prototype),
+                        })).filter((r) => r.id);
+                        
+                        
+                       
+                }
+                return [];
+            }
+
+            return {
+                id: "Object",
+                label: "Object",
+                children: getChildren(Object.prototype),
+            };
+        }
+        const objects = getRealm();
+        console.log(objects)
+        renderG6(objects);
+    </script>
+</body>
+
+</html>
