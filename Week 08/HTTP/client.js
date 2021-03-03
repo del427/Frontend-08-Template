@@ -50,10 +50,10 @@ class Request{
         })
     }
     toString() {
-        return `${this.method} ${this.path} HTTP/1.1 \r
-        ${Object.keys(this.headers).map(key => `${key}:${this.headers[key]}`).join('\r\n')}\r
-        \r
-        ${this.bodyText}`
+        return `${this.method} ${this.path} HTTP/1.1\r
+${Object.keys(this.headers).map(key => `${key}:${this.headers[key]}`).join('\r\n')}\r
+\r
+${this.bodyText}`
     }
 }
 class TrunkedBodyParser {
