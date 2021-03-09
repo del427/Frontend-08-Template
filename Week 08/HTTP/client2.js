@@ -34,7 +34,7 @@ class Request{
                     connection.write(this.toString())
                 })
             }
-
+           
             connection.on('data',(data) => {
                 console.log(data.toString());
                 parser.receive(data.toString());
@@ -52,7 +52,7 @@ class Request{
     }
     toString() {
         return `${this.method} ${this.path} HTTP/1.1\r
-        ${Object.keys(this.headers).map(key => `${key}:${this.headers[key]}`).join('\r\n')}\r
+${Object.keys(this.headers).map(key => `${key}:${this.headers[key]}`).join('\r\n')}\r
         \r
         ${this.bodyText}`
     }
@@ -104,7 +104,7 @@ void async function () {
     let request = new Request({
         method:'POST',
         host:'127.0.0.1',
-        port:'8080',
+        port:'8088',
         path:'/',
         headers:{
             ['X-F002']:'customed'
