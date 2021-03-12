@@ -34,9 +34,9 @@ class Request{
                     connection.write(this.toString())
                 })
             }
-           
+
             connection.on('data',(data) => {
-                console.log(data.toString());
+               
                 parser.receive(data.toString());
                 if(parse.isFinished){
                     resolve(parser.response);
@@ -77,26 +77,62 @@ class Responseparser {
         this.headerValue = '';
         this.bodyParser = null;
     }
-    get isFinished() {
-        return this.bodyParser && this.bodyParser.isFinished
-    }
-    get response () {
-        this.statusLine.match(/HTTP\/1.1 ([0-9]+) ([\s\S]+)/)
-        return {
-            statusCode: RegExp.$1,
-            statusText:RegExp.$2,
-            headers:this.headers,
-            body:this.bodyParser.content.join('')
-        }
-    }
+ 
 
     receive(string){
+        console.log(string,'string')
         for(let i = 0; i < string.length; i++){
             this.receiveChar(string.charAt(i))
         }
     }
     receiveChar(char) {
-
+        if(this.current === this.WAITING_STATUS_LINE) {
+            if(char === '\r') {
+                this.current = this.WAITING_STATUS_LINE_END;
+            } else {
+                console.log(char)
+                this.statusLine+=char;
+            }
+        } else if(this.current === this.WAITING_STATUS_LINE_END) {
+            if(char === '\n') {
+                this.current = this.WAITING_HEADER_NAME;
+            }
+        } else if(this.current === this.WAITING_HEADER_NAME) {
+            if(char === ':') {
+                this.current = this.WAITING_HEADER_SPACE;
+            } else if(char === '\r') {
+                this.current = this.WAITING_HEADER_BLOCK_END;
+                if(this.headers['Transfer-Encoding'] === 'chunked') {
+                    // this.bodyParser = new TrunkedBodyParser();
+                }
+            } else {
+                this.headerName += char;
+            }
+        } else if(this.current === this.WAITING_HEADER_SPACE) {
+            if(char === ' ') {
+                this.current = this.WAITING_HEADER_VALUE;
+            }
+        } else if(this.current === this.WAITING_HEADER_VALUE) {
+            if(char === '\r') {
+                this.current = this.WAITING_HEADER_LINE_END;
+                this.headers[this.headerName] = this.headerValue;
+                this.headerName = '';
+                this.headerValue = '';
+            } else {
+                this.headerValue += char;
+            }
+        } else if(this.current === this.WAITING_HEADER_LINE_END) {
+            if(char === '\n') {
+                this.current = this.WAITING_HEADER_NAME;
+            }
+        } else if(this.current === this.WAITING_HEADER_BLOCK_END) {
+            if(char === '\n') {
+                this.current = this.WAITING_BODY;
+            }
+        } else if(this.current === this.WAITING_BODY) {
+            console.log(this.char)
+            // this.bodyParser.receiveChar(char);
+        }
     }
     
 }
@@ -104,7 +140,7 @@ void async function () {
     let request = new Request({
         method:'POST',
         host:'127.0.0.1',
-        port:'8088',
+        port:'8080',
         path:'/',
         headers:{
             ['X-F002']:'customed'
