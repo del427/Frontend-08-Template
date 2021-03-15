@@ -1,5 +1,5 @@
 const net = require('net');
-const parser = require('./parser1.js')
+const parser = require('./parser3.js')
 class Request{
     constructor(options){
         this.method = options.method || 'GET';
@@ -199,5 +199,6 @@ void async function () {
         }
     });
     let response = await request.send();
-    let dom = parser.parseHTML(response.body)
+    let dom = parser.parseHTML(response.body);
+    console.log(dom)
 }()
